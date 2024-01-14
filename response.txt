@@ -1,0 +1,55 @@
+
+Sure, I'd be happy to help you write comprehensive unit tests in Jest for your TypeScript function. Before going forward, please make sure you have Jest installed and setup with TypeScript in your project.
+
+Assuming the purpose of your function is to scrape table data from a webpage, filter it by subject and subject_number, and return an array of ICourseRegistration. I'm going to use jest-puppeteer for page object and jsdom to simulate the DOM in Node.js environment.
+
+1. First, you need to create a mock of your "Page" object you passed to the "scrapeTableData" function. This mock object should have an "evaluate" method that will return the dummy data you want to work with for your tests.
+
+2. Second, you need to create a mock of your "document" and specifically, the "querySelectorAll" method.
+
+3. Your tests will include what happens when 1) no table row matches the subject and subject_number 2) some table rows match the subject and subject_number.
+
+Here is an example of what that could look like:
+
+```typescript
+import { scrapeTableData } from './yourFile';
+import { Page } from 'puppeteer';
+import { JSDOM } from 'jsdom';
+
+// mock data
+const mockData = [
+    //put your mock data here, for example 
+    // { crn: '1234', subj: 'Math', crse: '101', ... },
+    // { crn: '5678', subj: 'Eng', crse: '201', ... },
+    // etc...
+];
+
+const page: Partial<Page> = {
+  evaluate: jest.fn(() => mockData), 
+};
+
+describe('scrapeTableData', () => {
+    beforeEach(() => {
+        // Reset the document body
+        (global as any).document = new JSDOM('').window.document;
+    });
+
+    it('returns empty array when no data matches subject and subject_number', async () => {
+        const result = await scrapeTableData(page as Page, 'non_existent_subject', 'non_existent_number');
+        expect(result).toEqual([]);
+    });
+
+    it('returns matching data when some rows match subject and subject_number', async () => {
+        // this would depend on what data you have inside mockData
+        const result = await scrapeTableData(page as Page, 'Math', '101');
+        expect(result).toEqual([
+            // expected result here
+        ]);
+    });
+});
+```
+
+Remember to replace `'./yourFile'` with the path to the file where `scrapeTableData` is placed, also replace mock data with appropriate testing data. This is a very simple example of how you can write unit tests for your function, each test might look different depending on how complex your function gets. 
+
+Keep in mind that when working with puppeteer in Jest, we usually have to mock lots of browser APIs, which might be unreliable for some complex scraping tasks. Consider using end-to-end testing libraries for such purposes.
+
